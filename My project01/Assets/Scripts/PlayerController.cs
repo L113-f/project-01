@@ -5,7 +5,7 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Move")]
-    [SerializeField] private float moveSpeed = 8f;
+    [SerializeField] public float moveSpeed = 8f;
 
     [Header("Jump")]
     [SerializeField] private float jumpForce = 12f;
@@ -48,7 +48,7 @@ public class PlayerController : MonoBehaviour
         rb.velocity = new Vector2(inputX * moveSpeed, rb.velocity.y);
     }
 
-    private bool IsOnGround()
+    public bool IsOnGround()
     {
         if (!groundCheck) return false;
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer);

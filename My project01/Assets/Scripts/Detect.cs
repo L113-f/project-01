@@ -18,7 +18,7 @@ public class Detect : MonoBehaviour
     void OnTriggerStay2D(Collider2D collision)
     {
         if (locked && once) return;
-        if (HasLineOfSight(collision))
+        if (HasLineOfSight(collision) && collision.CompareTag(PlayerTag))
         {
             locked = true;
             Debug.Log("game over");
