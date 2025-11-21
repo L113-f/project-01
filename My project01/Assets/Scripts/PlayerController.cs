@@ -5,7 +5,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Move")]
-    [SerializeField] public float moveSpeed = 8f;
+    [SerializeField] public float moveSpeed = 4f;
+    [SerializeField] public float walkSpeed= 2f;
 
     [Header("Jump")]
     [SerializeField] private float jumpForce = 12f;
@@ -19,16 +20,23 @@ public class PlayerController : MonoBehaviour
     private float inputX;
     private bool isGrounded;
     private bool facingRight = true;
+    public bool canMove ;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        canMove = true;
     }
 
     private void Update()
     {
         // 左右移动输入
         inputX = Input.GetAxisRaw("Horizontal");
+        if (!canMove)
+        {
+            inputX = 0f;
+            return;
+        }
 
         // 跳跃（仅在落地时）
         if (Input.GetButtonDown("Jump") && IsOnGround())
@@ -44,8 +52,8 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
-        // 简单水平移动：直接设置X速度
-        rb.velocity = new Vector2(inputX * moveSpeed, rb.velocity.y);
+        float speed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed : walkSpeed;
+        rb.velocity = new Vector2(inputX * speed, rb.velocity.y);
     }
 
     public bool IsOnGround()
