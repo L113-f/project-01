@@ -18,7 +18,7 @@ public class GetItem : MonoBehaviour
     {
         if(picked)
             return;
-        if(Input.GetKeyDown(KeyCode.E))
+        if(Input.GetKeyDown(KeyCode.E) && inRange)
         {
             StartCoroutine(PickRoutine());
         }

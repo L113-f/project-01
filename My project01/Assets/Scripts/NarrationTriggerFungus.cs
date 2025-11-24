@@ -21,8 +21,26 @@ public class NarrationTriggerFungus : MonoBehaviour
 
     private bool triggered;
 
+    public bool Once;
+
+    public bool CameraTrigger;
+
+
+
+    public PlayerController player;
+
     void OnTriggerEnter2D(Collider2D other)
     {
+        
+        if(!CameraTrigger)
+        {   
+            if(!Once)
+                return;
+            player.canMove = false;
+        }
+
+       
+        
         if (!other.CompareTag(playerTag)) return;
         if (triggerOnce && triggered) return;
         if (!flowchart) return;
@@ -46,5 +64,17 @@ public class NarrationTriggerFungus : MonoBehaviour
         }
 
         triggered = true;
+
+
+
+
     }
+
+    public void CanMove()
+    {
+        player.canMove = true;
+        Once = false;
+    }
+
+    
 }

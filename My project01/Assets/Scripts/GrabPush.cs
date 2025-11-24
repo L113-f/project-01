@@ -12,6 +12,8 @@ public class GrabPush : MonoBehaviour
     public float grabRange = 0.3f;
     FixedJoint2D joint;
     GameObject grabbedbox;
+    public Rigidbody2D rb;
+
    
 
     void Start()
@@ -25,10 +27,13 @@ public class GrabPush : MonoBehaviour
         if (Input.GetKey(KeyCode.F))
         {
             TryGrab();
+            rb.mass = 1;
+            
         }
         else if (Input.GetKeyUp(KeyCode.F) )
         {
             Release();
+            rb.mass = 100;
         }
     }
 
@@ -38,7 +43,7 @@ public class GrabPush : MonoBehaviour
         if (col && col.attachedRigidbody)
         {
             grabbedbox = col.gameObject;
-            grabbedbox.GetComponent<Rigidbody2D>().constraints  &= ~RigidbodyConstraints2D.FreezePositionX;
+            rb.constraints = RigidbodyConstraints2D.FreezeRotation; 
             joint = grabbedbox.GetComponent<FixedJoint2D>();
             joint.enabled = true;
             joint.connectedBody = this.gameObject.GetComponent<Rigidbody2D>();
@@ -51,7 +56,7 @@ public class GrabPush : MonoBehaviour
     {
         if (joint == null) return;
         joint.enabled = false;
-        grabbedbox.GetComponent<Rigidbody2D>().constraints |= RigidbodyConstraints2D.FreezePositionX;
+        rb.constraints = RigidbodyConstraints2D.None; 
         playerController.moveSpeed = 4f;
     }
     
