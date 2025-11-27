@@ -5,8 +5,8 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Move")]
-    [SerializeField] public float moveSpeed = 4f;
-    [SerializeField] public float walkSpeed= 2f;
+    [SerializeField] public float moveSpeed = 4f; // 跑步速度（Shift）
+    [SerializeField] public float walkSpeed = 2f; // 正常走路速度
 
     [Header("Jump")]
     [SerializeField] private float jumpForce = 12f;
@@ -17,41 +17,50 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private LayerMask groundLayer;
 
     private Rigidbody2D rb;
+    private Animator anim;
     private float inputX;
     private bool isGrounded;
     private bool facingRight = true;
-    public bool canMove ;
+    public bool canMove;
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        anim = GetComponent<Animator>();
         canMove = true;
     }
 
     private void Update()
     {
-        // 左右移动输入
-        inputX = Input.GetAxisRaw("Horizontal");
-        if (!canMove)
-        {
-            inputX = 0f;
-            return;
-        }
+        // ===== 水平输入 =====
+        inputX = canMove ? Input.GetAxisRaw("Horizontal") : 0f;
 
-        // 跳跃（仅在落地时）
-        if (Input.GetButtonDown("Jump") && IsOnGround())
+        // ===== 跳跃（仅在落地时） =====
+        if (canMove && Input.GetButtonDown("Jump") && IsOnGround())
         {
             rb.velocity = new Vector2(rb.velocity.x, 0f); // 防止叠加
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
         }
 
-        // 翻转朝向（可选）
+        // ===== 翻转朝向 =====
         if (inputX > 0.01f && !facingRight) Flip();
         else if (inputX < -0.01f && facingRight) Flip();
+
+        // ===== 动画状态：走路 / 跑步 / Idle =====
+        bool isMoving = Mathf.Abs(inputX) > 0.01f && IsOnGround() && canMove;
+        bool isRunning = isMoving && Input.GetKey(KeyCode.LeftShift);  // 按住 Shift = 跑步
+
+        if (anim != null)
+        {
+            // 跑步优先
+            anim.SetBool("IsRunning", isRunning);
+            anim.SetBool("IsWalking", isMoving && !isRunning);
+        }
     }
 
     private void FixedUpdate()
     {
+        // Shift 控制速度：跑/走
         float speed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed : walkSpeed;
         rb.velocity = new Vector2(inputX * speed, rb.velocity.y);
     }
