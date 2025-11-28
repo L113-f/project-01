@@ -49,7 +49,7 @@ public class puppet : MonoBehaviour
                 var mgr = NoiseManager.Instance;
                 if (mgr)
                 {
-                    mgr.noise = mgr.maxNoise;
+                    mgr.currentNoise = mgr.maxNoise;
                 }
                 Debug.Log("木头人转身时你动了 → 噪声拉满！");
             }
