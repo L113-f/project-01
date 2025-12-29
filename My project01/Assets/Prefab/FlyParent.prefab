@@ -132,8 +132,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   leftLight: {fileID: 7563400927420193836}
   rightLight: {fileID: 4480876452048007793}
-  speed: 1.5
-  waitDur: 0.5
+  speed: 2
+  waitDur: 0.1
 --- !u!1 &4097729812492787913
 GameObject:
   m_ObjectHideFlags: 0
@@ -344,7 +344,7 @@ Transform:
   m_GameObject: {fileID: 5286081061192560182}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 5.54, y: 0, z: 0}
+  m_LocalPosition: {x: 3.48, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -402,7 +402,7 @@ MonoBehaviour:
   m_Intensity: 2
   m_LightVolumeIntensity: 1
   m_LightVolumeIntensityEnabled: 0
-  m_ApplyToSortingLayers: 00000000
+  m_ApplyToSortingLayers: e370581900000000
   m_LightCookieSprite: {fileID: 0}
   m_DeprecatedPointLightCookieSprite: {fileID: 0}
   m_LightOrder: 0
@@ -619,6 +619,10 @@ MonoBehaviour:
   offset: 0.03
   once: 0
   locked: 0
+  bodyPoints:
+  - {fileID: 0}
+  - {fileID: 0}
+  - {fileID: 0}
 --- !u!1 &7683410833289630734
 GameObject:
   m_ObjectHideFlags: 0
@@ -644,7 +648,7 @@ Transform:
   m_GameObject: {fileID: 7683410833289630734}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 3.41, y: 0, z: 0}
+  m_LocalPosition: {x: -0.06, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

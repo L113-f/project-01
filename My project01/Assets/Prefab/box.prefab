@@ -12,7 +12,6 @@ GameObject:
   - component: {fileID: 1456062403268191181}
   - component: {fileID: 7129861378425397023}
   - component: {fileID: 6169322798297977683}
-  - component: {fileID: 8763523484388563046}
   m_Layer: 6
   m_Name: box
   m_TagString: Untagged
@@ -146,7 +145,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.06340122, y: 0.03962779}
+  m_Offset: {x: -0.06340122, y: 0.18174756}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -157,24 +156,5 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 8.373198, y: 8.32567}
+  m_Size: {x: 8.373198, y: 8.041431}
   m_EdgeRadius: 0
---- !u!255 &8763523484388563046
-FixedJoint2D:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 3729068704953704366}
-  m_Enabled: 0
-  serializedVersion: 4
-  m_EnableCollision: 0
-  m_ConnectedRigidBody: {fileID: 0}
-  m_BreakForce: Infinity
-  m_BreakTorque: Infinity
-  m_BreakAction: 3
-  m_AutoConfigureConnectedAnchor: 1
-  m_Anchor: {x: 0, y: 0}
-  m_ConnectedAnchor: {x: 13.92, y: 4.95}
-  m_DampingRatio: 0
-  m_Frequency: 0

@@ -32,34 +32,46 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        // ===== 地面检测（只算一次） =====
+        isGrounded = IsOnGround();
+
         // ===== 水平输入 =====
         inputX = canMove ? Input.GetAxisRaw("Horizontal") : 0f;
+        if(!canMove)
+            rb.velocity = new Vector2(0f, 0f);
 
         // ===== 跳跃（仅在落地时） =====
-        if (canMove && Input.GetButtonDown("Jump") && IsOnGround())
+        if (canMove && Input.GetButtonDown("Jump") && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, 0f); // 防止叠加
             rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
+            isGrounded = false; // 刚起跳立即视为离地
         }
 
         // ===== 翻转朝向 =====
         if (inputX > 0.01f && !facingRight) Flip();
         else if (inputX < -0.01f && facingRight) Flip();
 
-        // ===== 动画状态：走路 / 跑步 / Idle =====
-        bool isMoving = Mathf.Abs(inputX) > 0.01f && IsOnGround() && canMove;
-        bool isRunning = isMoving && Input.GetKey(KeyCode.LeftShift);  // 按住 Shift = 跑步
-
+        // ===== 动画状态：走路 / 跑步 / 跳跃 / Idle =====
         if (anim != null)
         {
-            // 跑步优先
+            bool isMoving = Mathf.Abs(inputX) > 0.01f && isGrounded && canMove;
+            bool isRunning = isMoving && Input.GetKey(KeyCode.LeftShift);  // 按住 Shift = 跑步
+
+            // 跑步 / 走路 只在地面上才生效
             anim.SetBool("IsRunning", isRunning);
             anim.SetBool("IsWalking", isMoving && !isRunning);
+
+            // 跳跃：只要不在地面上就认为在空中（简单版）
+            bool isJumping = !isGrounded;
+            anim.SetBool("IsJumping", isJumping);
         }
     }
 
     private void FixedUpdate()
     {
+        if (!canMove) return;
+
         // Shift 控制速度：跑/走
         float speed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed : walkSpeed;
         rb.velocity = new Vector2(inputX * speed, rb.velocity.y);
