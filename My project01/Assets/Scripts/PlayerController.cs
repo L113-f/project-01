@@ -5,16 +5,24 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     [Header("Move")]
-    [SerializeField] public float moveSpeed = 4f; // 跑步速度（Shift）
-    [SerializeField] public float walkSpeed = 2f; // 正常走路速度
+    [SerializeField] public float moveSpeed = 4f; 
+    [SerializeField] public float walkSpeed = 2f; 
 
     [Header("Jump")]
     [SerializeField] private float jumpForce = 12f;
+    [SerializeField] private float windJumpMultiplier = 1.3f; 
 
     [Header("Ground Check")]
-    [SerializeField] private Transform groundCheck;     // 放在脚底
+    [SerializeField] private Transform groundCheck;
     [SerializeField] private float groundRadius = 0.15f;
     [SerializeField] private LayerMask groundLayer;
+
+    [Header("Wind Effect")]
+    [SerializeField] private float windHorizontalBonus = 2f; 
+    [SerializeField] private float windExitTolerance = 0.3f; // 离开风区后保持状态的缓冲时间
+
+    private bool isInWind = false; 
+    private float windTimer; 
 
     private Rigidbody2D rb;
     private Animator anim;
@@ -22,6 +30,8 @@ public class PlayerController : MonoBehaviour
     private bool isGrounded;
     private bool facingRight = true;
     public bool canMove;
+
+    private MovingPlatform2D currentPlatform;
 
     private void Awake()
     {
@@ -32,56 +42,94 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        // ===== 地面检测（只算一次） =====
         isGrounded = IsOnGround();
-
-        // ===== 水平输入 =====
         inputX = canMove ? Input.GetAxisRaw("Horizontal") : 0f;
-        if(!canMove)
-            rb.velocity = new Vector2(0f, 0f);
 
-        // ===== 跳跃（仅在落地时） =====
-        if (canMove && Input.GetButtonDown("Jump") && isGrounded)
+        // 容错计时器逻辑
+        if (windTimer > 0)
         {
-            rb.velocity = new Vector2(rb.velocity.x, 0f); // 防止叠加
-            rb.AddForce(Vector2.up * jumpForce, ForceMode2D.Impulse);
-            isGrounded = false; // 刚起跳立即视为离地
+            windTimer -= Time.deltaTime;
+            isInWind = true;
+        }
+        else
+        {
+            isInWind = false;
         }
 
-        // ===== 翻转朝向 =====
+        if (!canMove)
+            rb.velocity = new Vector2(0f, rb.velocity.y);
+
+        // 跳跃逻辑
+        if (canMove && Input.GetButtonDown("Jump") && (isGrounded || isInWind))
+        {
+            float finalJumpForce = jumpForce;
+            Vector2 finalJumpDir = Vector2.up;
+
+            if (isInWind)
+            {
+                finalJumpForce *= windJumpMultiplier;
+                finalJumpDir += new Vector2(inputX * 0.4f, 0); 
+                windTimer = 0; // 跳跃瞬间结束风场状态
+            }
+
+            rb.velocity = new Vector2(rb.velocity.x, 0f); 
+            rb.AddForce(finalJumpDir.normalized * finalJumpForce, ForceMode2D.Impulse);
+            isGrounded = false; 
+        }
+
         if (inputX > 0.01f && !facingRight) Flip();
         else if (inputX < -0.01f && facingRight) Flip();
 
-        // ===== 动画状态：走路 / 跑步 / 跳跃 / Idle =====
+        // 动画控制
         if (anim != null)
         {
             bool isMoving = Mathf.Abs(inputX) > 0.01f && isGrounded && canMove;
-            bool isRunning = isMoving && Input.GetKey(KeyCode.LeftShift);  // 按住 Shift = 跑步
+            bool isRunning = isMoving && Input.GetKey(KeyCode.LeftShift);
 
-            // 跑步 / 走路 只在地面上才生效
             anim.SetBool("IsRunning", isRunning);
             anim.SetBool("IsWalking", isMoving && !isRunning);
 
-            // 跳跃：只要不在地面上就认为在空中（简单版）
-            bool isJumping = !isGrounded;
-            anim.SetBool("IsJumping", isJumping);
+            // 优先判断是否在风中，播放漂浮动画
+            anim.SetBool("IsInWind", isInWind);
+            anim.SetBool("IsJumping", !isGrounded && !isInWind);
         }
     }
 
     private void FixedUpdate()
     {
-        if (!canMove) return;
+        float baseSpeed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed : walkSpeed;
+        float speed = isInWind ? baseSpeed + windHorizontalBonus : baseSpeed;
+        float vx = inputX * speed;
 
-        // Shift 控制速度：跑/走
-        float speed = Input.GetKey(KeyCode.LeftShift) ? moveSpeed : walkSpeed;
-        rb.velocity = new Vector2(inputX * speed, rb.velocity.y);
+        if (currentPlatform != null && isGrounded)
+        {
+            vx += currentPlatform.PlatformVelocity.x;
+        }
+
+        // 仅在水平方向控制速度，垂直方向完全交给物理引擎（Area Effector）
+        rb.velocity = new Vector2(vx, rb.velocity.y);
+        
+        if (!isInWind && rb.drag > 0)
+        {
+            rb.drag = Mathf.MoveTowards(rb.drag, 0, Time.fixedDeltaTime * 2f);
+        }
+    }
+
+    private void OnTriggerStay2D(Collider2D other)
+    {
+        if (other.CompareTag("Wind")) 
+        {
+            windTimer = windExitTolerance; // 只要在区域内，就刷新计时器
+            rb.drag = 1.0f; // 保持轻微空气阻力，让悬停更稳
+        }
     }
 
     public bool IsOnGround()
     {
         if (!groundCheck) return false;
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer);
-        return isGrounded;
+        // 在风中时，只要有向上的趋势，就认为不在地面
+        if (isInWind && rb.velocity.y > 0.01f) return false;
+        return Physics2D.OverlapCircle(groundCheck.position, groundRadius, groundLayer);
     }
 
     private void Flip()
@@ -92,10 +140,25 @@ public class PlayerController : MonoBehaviour
         transform.localScale = s;
     }
 
-    private void OnDrawGizmosSelected()
+    private void OnCollisionStay2D(Collision2D col)
     {
-        if (!groundCheck) return;
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(groundCheck.position, groundRadius);
+        var platform = col.collider.GetComponent<MovingPlatform2D>();
+        if (!platform) return;
+
+        for (int i = 0; i < col.contactCount; i++)
+        {
+            if (col.GetContact(i).normal.y > 0.5f)
+            {
+                currentPlatform = platform;
+                return;
+            }
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D col)
+    {
+        var platform = col.collider.GetComponent<MovingPlatform2D>();
+        if (platform && currentPlatform == platform)
+            currentPlatform = null;
     }
 }

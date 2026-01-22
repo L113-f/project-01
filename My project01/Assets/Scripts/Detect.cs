@@ -2,15 +2,17 @@ using UnityEngine;
 
 public class Detect : MonoBehaviour
 {
+    [Header("遮挡检测起点（摄像头/灯的眼睛位置）")]
     public Transform startPoint;
-    public string PlayerTag = "Player";
 
-    [Header("遮挡层（墙/地形等），不要包含 Player 层）")]
-    public LayerMask Layers;
+    [Header("玩家Tag（建议打在玩家根物体）")]
+    public string playerTag = "Player";
 
+    [Header("遮挡层（墙/石头/地形等），不要包含 Player 层）")]
+    public LayerMask obstacleMask;
+
+    [Header("射线起点偏移：避免射线一开始就打到自己")]
     public float offset = 0.03f;
-    public bool once = false;
-    public bool locked;
 
     [Header("玩家身体点（挂在玩家身上的空物体：Head/Chest/Legs...）")]
     public Transform[] bodyPoints;
@@ -21,64 +23,61 @@ public class Detect : MonoBehaviour
     void Awake()
     {
         if (!detectArea) detectArea = GetComponent<Collider2D>();
+        if (!startPoint) startPoint = transform;
     }
 
-    void OnTriggerStay2D(Collider2D collision)
+    void OnTriggerStay2D(Collider2D other)
     {
-        if (locked && once) return;
-        if (!collision.CompareTag(PlayerTag)) return;
+        // ✅更稳：子碰撞体也能识别玩家
+        if (!other.transform.root.CompareTag(playerTag)) return;
 
-        // ✅全部点：在探测区内 + 无遮挡  才死亡
-        if (AllPointsHaveLineOfSight())
+        // ✅任意一个点：在光圈里 + 无遮挡 -> GG（更符合“被照到就死”）
+        if (AnyPointSeen())
         {
-            locked = true;
-            Debug.Log("game over");
+            GameOver();
         }
     }
 
-    private void OnTriggerExit2D(Collider2D other)
+    bool AnyPointSeen()
     {
-        if (!once && other.CompareTag(PlayerTag))
-            locked = false;
-    }
+        if (!detectArea || !startPoint || bodyPoints == null || bodyPoints.Length == 0)
+            return false;
 
-    bool AllPointsHaveLineOfSight()
-    {
-        if (startPoint == null) return false;
-        if (detectArea == null) return false;
-        if (bodyPoints == null || bodyPoints.Length == 0) return false;
-
-        for (int i = 0; i < bodyPoints.Length; i++)
-        {
-            var pt = bodyPoints[i];
-
-            // ✅更严格：点没绑就直接不通过，避免“只剩一个点也会死”
-            if (pt == null) return false;
-
-            // ✅点必须在探测区里（光圈里）
-            if (!detectArea.OverlapPoint(pt.position))
-                return false;
-
-            // ✅点到灯之间必须无遮挡
-            if (!HasLineOfSightToPoint(pt.position))
-                return false;
-        }
-
-        return true;
-    }
-
-    bool HasLineOfSightToPoint(Vector2 point)
-    {
         Vector2 origin = startPoint.position;
-        Vector2 dir = point - origin;
-        float dist = dir.magnitude;
 
-        if (dist <= 0.0001f) return true;
+        foreach (var pt in bodyPoints)
+        {
+            if (!pt) continue;
+
+            // 点必须在探测区里
+            if (!detectArea.OverlapPoint(pt.position))
+                continue;
+
+            // 点到灯之间必须无遮挡
+            if (!IsBlocked(origin, pt.position))
+                return true;
+        }
+
+        return false;
+    }
+
+    bool IsBlocked(Vector2 origin, Vector2 target)
+    {
+        Vector2 dir = target - origin;
+        float dist = dir.magnitude;
+        if (dist <= 0.0001f) return false;
 
         Vector2 start = origin + dir.normalized * offset;
 
-        RaycastHit2D hit = Physics2D.Raycast(start, dir.normalized, dist, Layers);
+        RaycastHit2D hit = Physics2D.Raycast(start, dir.normalized, dist, obstacleMask);
+        return hit.collider != null;
+    }
 
-        return hit.collider == null;
+    void GameOver()
+    {
+        Debug.Log("game over");
+        // TODO: 在这里调用你的死亡/重开关卡逻辑
+        // 例如：GameManager.Instance.GameOver();
+        enabled = false; // ✅防止同一帧疯狂重复触发（可选）
     }
 }
