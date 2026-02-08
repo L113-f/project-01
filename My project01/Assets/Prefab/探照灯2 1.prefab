@@ -219,18 +219,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startPoint: {fileID: 6585219084235330985}
-  PlayerTag: Player
-  Layers:
+  playerTag: Player
+  obstacleMask:
     serializedVersion: 2
     m_Bits: 8
   offset: 0.03
-  once: 0
-  locked: 0
   bodyPoints:
   - {fileID: 0}
   - {fileID: 0}
   - {fileID: 0}
-  detectArea: {fileID: 0}
+  detectArea: {fileID: 2142037646662328679}
 --- !u!60 &2142037646662328679
 PolygonCollider2D:
   m_ObjectHideFlags: 0

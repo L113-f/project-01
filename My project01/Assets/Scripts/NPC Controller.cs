@@ -69,7 +69,7 @@ public class NPCController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.CompareTag(playerTag))
+        if (collision.transform.root.CompareTag(playerTag))
         {
             canSay = true;
             // TODO：这里可以弹一个 UI 提示“按 E 对话”
@@ -78,7 +78,7 @@ public class NPCController : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.CompareTag(playerTag))
+        if (collision.transform.root.CompareTag(playerTag))
         {
             canSay = false;
             // TODO：这里可以隐藏“按 E 对话”提示

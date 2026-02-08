@@ -76,8 +76,10 @@ public class Detect : MonoBehaviour
     void GameOver()
     {
         Debug.Log("game over");
-        // TODO: 在这里调用你的死亡/重开关卡逻辑
-        // 例如：GameManager.Instance.GameOver();
-        enabled = false; // ✅防止同一帧疯狂重复触发（可选）
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.PlayerDeath();
+        }
+        enabled = false; 
     }
 }

@@ -41,7 +41,7 @@ public class NarrationTriggerFungus : MonoBehaviour
 
        
         
-        if (!other.CompareTag(playerTag)) return;
+        if (!other.transform.root.CompareTag("Player")) return;
         if (triggerOnce && triggered) return;
         if (!flowchart) return;
 

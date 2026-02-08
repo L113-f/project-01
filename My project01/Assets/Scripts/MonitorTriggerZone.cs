@@ -34,7 +34,7 @@ public class MonitorTriggerZone : MonoBehaviour
         if (!blocked)
         {
             Debug.Log("GG");
-            // TODO: 这里调用你的GameOver/重置逻辑
+            GameManager.Instance.PlayerDeath();
         }
     }
 

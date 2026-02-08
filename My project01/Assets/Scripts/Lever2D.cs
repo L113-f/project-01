@@ -90,11 +90,11 @@ public class Lever2D : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        if (other.CompareTag("Player")) isInside = true;
+        if (other.transform.root.CompareTag("Player")) isInside = true;
     }
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player")) isInside = false;
+        if (other.transform.root.CompareTag("Player")) isInside = false;
     }
 }

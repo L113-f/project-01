@@ -8,7 +8,7 @@ public class SearchlightTriggerStart2D : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D other)
     {
-        if (!other.CompareTag(playerTag)) return;
+        if (!other.transform.root.CompareTag(playerTag)) return;
 
         for (int i = 0; i < targets.Length; i++)
             if (targets[i]) targets[i].Activate();

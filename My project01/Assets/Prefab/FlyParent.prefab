@@ -442,13 +442,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   startPoint: {fileID: 2296068656844637701}
-  PlayerTag: Player
-  Layers:
+  playerTag: Player
+  obstacleMask:
     serializedVersion: 2
     m_Bits: 8
   offset: 0.03
-  once: 0
-  locked: 0
   bodyPoints:
   - {fileID: 0}
   - {fileID: 0}
